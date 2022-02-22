@@ -2,7 +2,9 @@ package remotelog
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
+	"io"
 	"net"
 )
 
@@ -20,8 +22,12 @@ func (client tcpClient) connect(host string, port int) error {
 	go (func() {
 		for {
 			message, err := bufio.NewReader(c).ReadString('\n')
-			if err != nil {
-				fmt.Println("Error", err)
+			if errors.Is(err, net.ErrClosed) || err == io.EOF {
+				c.Close()
+				fmt.Println("connection closed")
+				return
+			} else if err != nil {
+				fmt.Println("Error:", err)
 				done <- true
 				return
 			}

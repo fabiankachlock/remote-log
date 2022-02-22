@@ -14,9 +14,15 @@ func main() {
 	mw := io.MultiWriter(os.Stdout, remotelog.RemoteLog)
 	logger.SetOutput(mw)
 
-	go remotelog.Start("127.0.0.1", 10341)
+	s := remotelog.NewTcp()
+	s.Listen("127.0.0.1", 10341)
 
-	for i := 0; i <= 100; i++ {
+	go func() {
+		<-time.After(time.Second * 10)
+		s.Close()
+	}()
+
+	for i := 0; i <= 20; i++ {
 		logger.Println(i)
 		<-time.After(time.Second)
 	}

@@ -12,7 +12,10 @@ type remoteLogger struct{}
 
 func (r remoteLogger) Write(p []byte) (n int, err error) {
 	n = len(p)
-	server.write(p)
+
+	for _, server := range activeServers {
+		server.write(p)
+	}
 
 	select {
 	case errRes := <-resultsChan:

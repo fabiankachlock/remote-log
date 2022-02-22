@@ -1,31 +1,42 @@
 package remotelog
 
-import "net"
-
 var (
-	messagesChan                 = make(chan []byte, 64)
-	resultsChan                  = make(chan error, 1)
-	doneChan                     = make(chan bool, 1)
-	server       remoteLogServer = tcpServer{map[string]net.Conn{}}
-	client       remoteLogClient = tcpClient{}
+	messagesChan                  = make(chan []byte, 64)
+	resultsChan                   = make(chan error, 1)
+	doneChan                      = make(chan bool, 1)
+	client        remoteLogClient = tcpClient{}
+	activeServers                 = []Server{}
 )
 
-type remoteLogServer interface {
+type Server interface {
+	Listen(host string, port int) error
+	Close() error
 	write(p []byte)
-	start(host string, port int) error
+	closedChan() <-chan bool
+}
+
+func NewTcp() Server {
+	server := newTcpServer()
+	activeServers = append(activeServers, server)
+
+	go func() {
+		<-server.closedChan()
+		index := -1
+		for i, s := range activeServers {
+			if server == s {
+				index = i
+				break
+			}
+		}
+		activeServers = append(activeServers[:index], activeServers[index+1:]...)
+
+	}()
+
+	return server
 }
 
 type remoteLogClient interface {
 	connect(host string, port int) error
-}
-
-func Start(host string, port int) error {
-	go func() {
-		for msg := range messagesChan {
-			server.write(msg)
-		}
-	}()
-	return server.start(host, port)
 }
 
 func Connect(host string, port int) error {
