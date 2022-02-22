@@ -2,11 +2,18 @@ package remotelog
 
 import (
 	"io"
+	"log"
 )
 
 var (
-	RemoteLog io.Writer = remoteLogger{}
+	Writer io.Writer = remoteLogger{}
 )
+
+func NewLogger() *log.Logger {
+	logger := log.Default()
+	logger.SetOutput(Writer)
+	return logger
+}
 
 type remoteLogger struct{}
 

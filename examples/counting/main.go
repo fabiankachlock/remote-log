@@ -11,8 +11,9 @@ import (
 
 func main() {
 	logger := log.Default()
-	mw := io.MultiWriter(os.Stdout, remotelog.RemoteLog)
+	mw := io.MultiWriter(os.Stdout, remotelog.Writer)
 	logger.SetOutput(mw)
+	// or logger := remotelog.NewLogger()
 
 	s := remotelog.NewTcp()
 	s.Listen("127.0.0.1", 10341)
