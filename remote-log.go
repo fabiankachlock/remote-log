@@ -1,11 +1,9 @@
 package remotelog
 
 var (
-	messagesChan                  = make(chan []byte, 64)
-	resultsChan                   = make(chan error, 1)
-	doneChan                      = make(chan bool, 1)
-	client        remoteLogClient = tcpClient{}
-	activeServers                 = []Server{}
+	resultsChan   = make(chan error, 1)
+	doneChan      = make(chan bool, 1)
+	activeServers = []Server{}
 )
 
 type Server interface {
@@ -20,16 +18,9 @@ func NewTcp() Server {
 	activeServers = append(activeServers, server)
 
 	go func() {
+		// remove server when closed
 		<-server.closedChan()
-		index := -1
-		for i, s := range activeServers {
-			if server == s {
-				index = i
-				break
-			}
-		}
-		activeServers = append(activeServers[:index], activeServers[index+1:]...)
-
+		activeServers = removeServer(activeServers, server)
 	}()
 
 	return server
