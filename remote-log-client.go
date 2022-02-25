@@ -1,5 +1,11 @@
 package remotelog
 
-func ConnectTcp(host string, port int) error {
-	return tcpClient{}.connect(host, port)
+type remotelogClient struct{}
+
+func NewClient() remotelogClient {
+	return remotelogClient{}
+}
+
+func (c remotelogClient) ConnectTcp(options ServerOptions) error {
+	return tcpClient{}.connect(options)
 }

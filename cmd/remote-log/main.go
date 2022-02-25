@@ -22,7 +22,11 @@ func main() {
 		return
 	}
 
-	err = remotelog.ConnectTcp(host, port)
+	client := remotelog.NewClient()
+	err = client.ConnectTcp(remotelog.ServerOptions{
+		Host: host,
+		Port: port,
+	})
 	if err != nil {
 		fmt.Println(err)
 	}

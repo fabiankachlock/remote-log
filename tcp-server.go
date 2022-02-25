@@ -29,8 +29,8 @@ func newTcpServer(results chan error, done chan bool) Server {
 	return server
 }
 
-func (s *tcpServer) Listen(host string, port int) error {
-	addr := fmt.Sprintf("%s:%d", host, port)
+func (s *tcpServer) Listen(options ServerOptions) error {
+	addr := fmt.Sprintf("%s:%d", options.Host, options.Port)
 
 	l, err := net.Listen("tcp", addr)
 	if err != nil {

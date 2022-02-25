@@ -17,7 +17,7 @@ func main() {
 	// or logger := remotelog.NewLogger()
 
 	s := rm.NewTcpServer()
-	s.Listen("127.0.0.1", 10341)
+	s.Listen(remotelog.ServerOptions{Host: "127.0.0.1", Port: 10341})
 
 	go func() {
 		<-time.After(time.Second * 10)

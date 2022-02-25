@@ -10,8 +10,8 @@ import (
 
 type tcpClient struct{}
 
-func (client tcpClient) connect(host string, port int) error {
-	addr := fmt.Sprintf("%s:%d", host, port)
+func (client tcpClient) connect(options ServerOptions) error {
+	addr := fmt.Sprintf("%s:%d", options.Host, options.Port)
 	c, err := net.Dial("tcp", addr)
 	if err != nil {
 		return err

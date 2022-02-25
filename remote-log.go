@@ -17,6 +17,11 @@ type (
 		lock sync.Mutex
 		slc  []Server
 	}
+
+	ServerOptions struct {
+		Host string
+		Port int
+	}
 )
 
 func New() RemoteLog {
@@ -50,7 +55,7 @@ func (r RemoteLog) ExitAll() []error {
 }
 
 type Server interface {
-	Listen(host string, port int) error
+	Listen(options ServerOptions) error
 	Close() error
 	write(p []byte)
 	closedChan() <-chan bool
