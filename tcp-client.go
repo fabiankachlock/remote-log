@@ -8,7 +8,10 @@ import (
 	"net"
 )
 
-type tcpClient struct{}
+type tcpClient struct {
+	id   string
+	conn net.Conn
+}
 
 func (client tcpClient) connect(options ServerOptions) error {
 	addr := fmt.Sprintf("%s:%d", options.Host, options.Port)
@@ -38,4 +41,8 @@ func (client tcpClient) connect(options ServerOptions) error {
 
 	<-done
 	return nil
+}
+
+func (client tcpClient) Close() error {
+	return client.conn.Close()
 }

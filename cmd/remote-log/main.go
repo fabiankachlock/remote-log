@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"time"
 
 	remotelog "github.com/fabiankachlock/remote-log"
 )
@@ -23,11 +24,14 @@ func main() {
 	}
 
 	client := remotelog.NewClient()
-	err = client.ConnectTcp(remotelog.ServerOptions{
+	c, err := client.ConnectTcp(remotelog.ServerOptions{
 		Host: host,
 		Port: port,
 	})
 	if err != nil {
 		fmt.Println(err)
 	}
+
+	<-time.After(time.Second * 7)
+	c.Close()
 }
