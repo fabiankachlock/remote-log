@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net"
 
 	"github.com/google/uuid"
@@ -16,17 +17,8 @@ type tcpServer struct {
 	results        chan error
 	done           chan bool
 	closed         chan bool
-}
-
-func newTcpServer(results chan error, done chan bool) Server {
-	server := &tcpServer{
-		map[string]net.Conn{},
-		nil,
-		results,
-		done,
-		make(chan bool),
-	}
-	return server
+	logger         *log.Logger
+	id             string
 }
 
 func (s *tcpServer) Listen(options ServerOptions) error {
@@ -38,7 +30,7 @@ func (s *tcpServer) Listen(options ServerOptions) error {
 	}
 
 	s.listener = &l
-	fmt.Println("listening")
+	s.logger.Printf("started tcp server %s at %s\n", s.id, addr)
 	go s.acceptConnections()
 	return nil
 }
@@ -47,6 +39,7 @@ func (s *tcpServer) Close() error {
 	for _, c := range s.tcpConnections {
 		c.Close()
 	}
+	s.logger.Printf("closed tcp server %s\n", s.id)
 	return (*s.listener).Close()
 }
 
@@ -71,7 +64,7 @@ func (s *tcpServer) handleConn(c net.Conn, id string) {
 			delete(s.tcpConnections, id)
 			return
 		} else if err != nil {
-			fmt.Println("Error:", err)
+			s.logger.Printf("Error: %s\n", err)
 			continue
 		}
 	}

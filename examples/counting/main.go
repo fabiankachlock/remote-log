@@ -10,7 +10,9 @@ import (
 )
 
 func main() {
-	rm := remotelog.New()
+	rm := remotelog.New(remotelog.InstanceOptions{
+		EnableLogging: true,
+	})
 	logger := log.Default()
 	mw := io.MultiWriter(os.Stdout, rm.Writer)
 	logger.SetOutput(mw)

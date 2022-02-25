@@ -23,7 +23,9 @@ func main() {
 		return
 	}
 
-	client := remotelog.NewClient()
+	client := remotelog.NewClient(remotelog.InstanceOptions{
+		EnableLogging: true,
+	})
 	c, err := client.ConnectTcp(remotelog.ServerOptions{
 		Host: host,
 		Port: port,

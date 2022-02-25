@@ -5,12 +5,14 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net"
 )
 
 type tcpClient struct {
-	id   string
-	conn net.Conn
+	id     string
+	conn   net.Conn
+	logger *log.Logger
 }
 
 func (client tcpClient) connect(options ServerOptions) error {
@@ -21,17 +23,17 @@ func (client tcpClient) connect(options ServerOptions) error {
 	}
 
 	done := make(chan bool)
-	fmt.Println("connected")
+	client.logger.Printf("connected to %s\n", addr)
 
 	go (func() {
 		for {
 			message, err := bufio.NewReader(c).ReadString('\n')
 			if errors.Is(err, net.ErrClosed) || err == io.EOF {
 				c.Close()
-				fmt.Println("connection closed")
+				client.logger.Println("connection closed")
 				return
 			} else if err != nil {
-				fmt.Println("Error:", err)
+				client.logger.Printf("Error: %s", err)
 				done <- true
 				return
 			}

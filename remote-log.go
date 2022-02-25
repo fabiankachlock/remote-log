@@ -2,7 +2,13 @@ package remotelog
 
 import (
 	"io"
+	"io/ioutil"
+	"log"
+	"net"
+	"os"
 	"sync"
+
+	"github.com/google/uuid"
 )
 
 type (
@@ -11,6 +17,7 @@ type (
 		doneChan      chan bool
 		activeServers *sharedServerSlice
 		Writer        io.Writer
+		logger        *log.Logger
 	}
 
 	sharedServerSlice struct {
@@ -22,9 +29,13 @@ type (
 		Host string
 		Port int
 	}
+
+	InstanceOptions struct {
+		EnableLogging bool
+	}
 )
 
-func New() RemoteLog {
+func New(options InstanceOptions) RemoteLog {
 	instance := RemoteLog{
 		resultsChan: make(chan error, 1),
 		doneChan:    make(chan bool, 1),
@@ -32,6 +43,12 @@ func New() RemoteLog {
 			sync.Mutex{},
 			[]Server{},
 		},
+	}
+
+	if options.EnableLogging {
+		instance.logger = log.New(os.Stdout, "", log.Ltime|log.Ldate)
+	} else {
+		instance.logger = log.New(ioutil.Discard, "", 0)
 	}
 
 	instance.Writer = logWriter{
@@ -62,7 +79,15 @@ type Server interface {
 }
 
 func (r RemoteLog) NewTcpServer() Server {
-	server := newTcpServer(r.resultsChan, r.doneChan)
+	server := &tcpServer{
+		map[string]net.Conn{},
+		nil,
+		r.resultsChan,
+		r.doneChan,
+		make(chan bool),
+		r.logger,
+		uuid.NewString(),
+	}
 
 	r.activeServers.lock.Lock()
 	r.activeServers.slc = append(r.activeServers.slc, server)
