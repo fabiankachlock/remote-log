@@ -18,6 +18,7 @@ func (client tcpClient) connect(host string, port int) error {
 	}
 
 	done := make(chan bool)
+	fmt.Println("connected")
 
 	go (func() {
 		for {

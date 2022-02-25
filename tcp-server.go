@@ -13,13 +13,17 @@ import (
 type tcpServer struct {
 	tcpConnections map[string]net.Conn
 	listener       *net.Listener
+	results        chan error
+	done           chan bool
 	closed         chan bool
 }
 
-func newTcpServer() Server {
+func newTcpServer(results chan error, done chan bool) Server {
 	server := &tcpServer{
 		map[string]net.Conn{},
 		nil,
+		results,
+		done,
 		make(chan bool),
 	}
 	return server
@@ -34,6 +38,7 @@ func (s *tcpServer) Listen(host string, port int) error {
 	}
 
 	s.listener = &l
+	fmt.Println("listening")
 	go s.acceptConnections()
 	return nil
 }
@@ -76,11 +81,11 @@ func (s *tcpServer) write(p []byte) {
 	for _, conn := range s.tcpConnections {
 		_, err := conn.Write(p)
 		if err != nil {
-			resultsChan <- err
+			s.results <- err
 			return
 		}
 	}
-	doneChan <- true
+	s.done <- true
 }
 
 func (s *tcpServer) closedChan() <-chan bool {
