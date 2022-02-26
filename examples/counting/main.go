@@ -18,7 +18,7 @@ func main() {
 	logger.SetOutput(mw)
 	// or logger := remotelog.NewLogger()
 
-	s := rm.NewTcpServer()
+	s := rm.NewUdpServer()
 	s.Listen(remotelog.ServerOptions{Host: "127.0.0.1", Port: 10341})
 
 	go func() {
