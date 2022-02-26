@@ -36,3 +36,12 @@ func (c remotelogClient) ConnectTcp(options ServerOptions) (ConnectedClient, err
 
 	return client, client.connect(options)
 }
+
+func (c remotelogClient) ConnectUdp(options ServerOptions) (ConnectedClient, error) {
+	client := udpClient{
+		id:     uuid.NewString(),
+		logger: c.logger,
+	}
+
+	return client, client.connect(options)
+}

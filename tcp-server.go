@@ -21,6 +21,10 @@ type tcpServer struct {
 	id             string
 }
 
+func (s *tcpServer) getId() string {
+	return s.id
+}
+
 func (s *tcpServer) Listen(options ServerOptions) error {
 	addr := fmt.Sprintf("%s:%d", options.Host, options.Port)
 
@@ -36,11 +40,24 @@ func (s *tcpServer) Listen(options ServerOptions) error {
 }
 
 func (s *tcpServer) Close() error {
+	if s.tcpConnections == nil {
+		// already closed
+		return nil
+	}
+	s.closed <- true
 	for _, c := range s.tcpConnections {
 		c.Close()
 	}
+	close(s.done)
+	close(s.results)
+	close(s.closed)
+
+	err := (*s.listener).Close()
 	s.logger.Printf("closed tcp server %s\n", s.id)
-	return (*s.listener).Close()
+
+	s.tcpConnections = nil
+	s.listener = nil
+	return err
 }
 
 func (s *tcpServer) acceptConnections() {

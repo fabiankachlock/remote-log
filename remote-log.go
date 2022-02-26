@@ -76,6 +76,21 @@ type Server interface {
 	Close() error
 	write(p []byte)
 	closedChan() <-chan bool
+	getId() string
+}
+
+func (r RemoteLog) registerServer(s Server) {
+	r.activeServers.lock.Lock()
+	r.activeServers.slc = append(r.activeServers.slc, s)
+	r.activeServers.lock.Unlock()
+
+	go func() {
+		// remove server when closed
+		<-s.closedChan()
+		r.activeServers.lock.Lock()
+		r.activeServers.slc = removeServer(r.activeServers.slc, s)
+		r.activeServers.lock.Unlock()
+	}()
 }
 
 func (r RemoteLog) NewTcpServer() Server {
@@ -88,18 +103,20 @@ func (r RemoteLog) NewTcpServer() Server {
 		r.logger,
 		uuid.NewString(),
 	}
+	r.registerServer(server)
+	return server
+}
 
-	r.activeServers.lock.Lock()
-	r.activeServers.slc = append(r.activeServers.slc, server)
-	r.activeServers.lock.Unlock()
-
-	go func() {
-		// remove server when closed
-		<-server.closedChan()
-		r.activeServers.lock.Lock()
-		r.activeServers.slc = removeServer(r.activeServers.slc, server)
-		r.activeServers.lock.Unlock()
-	}()
-
+func (r RemoteLog) NewUdpServer() Server {
+	server := &udpServer{
+		[]*net.UDPAddr{},
+		nil,
+		r.resultsChan,
+		r.doneChan,
+		make(chan bool),
+		r.logger,
+		uuid.NewString(),
+	}
+	r.registerServer(server)
 	return server
 }

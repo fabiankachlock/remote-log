@@ -21,7 +21,6 @@ func (r logWriter) Write(p []byte) (n int, err error) {
 	n = len(p)
 
 	if len(r.servers.slc) == 0 {
-		fmt.Println("no servers")
 		return
 	}
 
@@ -38,6 +37,6 @@ func (r logWriter) Write(p []byte) (n int, err error) {
 	case <-r.done:
 		break
 	}
-
+	fmt.Printf("written to %d server(s)\n", len(r.servers.slc))
 	return
 }
