@@ -17,6 +17,7 @@ type tcpClient struct {
 
 func (client tcpClient) connect(options ServerOptions) error {
 	addr := fmt.Sprintf("%s:%d", options.Host, options.Port)
+	client.logger.SetPrefix("[" + addr + "] ")
 	c, err := net.Dial("tcp", addr)
 	if err != nil {
 		return err
@@ -37,7 +38,7 @@ func (client tcpClient) connect(options ServerOptions) error {
 				done <- true
 				return
 			}
-			fmt.Print("-> " + message)
+			client.logger.Print("-> " + message)
 		}
 	})()
 

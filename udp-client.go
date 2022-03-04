@@ -16,6 +16,7 @@ type udpClient struct {
 
 func (client udpClient) connect(options ServerOptions) error {
 	addr := fmt.Sprintf("%s:%d", options.Host, options.Port)
+	client.logger.SetPrefix("[" + addr + "] ")
 	raddr, err := net.ResolveUDPAddr("udp", addr)
 	if err != nil {
 		return err
@@ -46,7 +47,7 @@ func (client udpClient) connect(options ServerOptions) error {
 				continue
 			}
 			message := string(buf[:n])
-			fmt.Print("-> " + message)
+			client.logger.Print(message)
 		}
 	})()
 	<-done

@@ -21,7 +21,7 @@ type (
 func NewClient(options InstanceOptions) remotelogClient {
 	instance := remotelogClient{}
 	if options.EnableLogging {
-		instance.logger = log.New(os.Stdout, "", log.Ltime|log.Ldate)
+		instance.logger = log.New(os.Stdout, "", 0)
 	} else {
 		instance.logger = log.New(ioutil.Discard, "", 0)
 	}
